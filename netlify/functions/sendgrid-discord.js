@@ -28,9 +28,10 @@ export async function handler(event, context) {
   // 2️⃣ Construct the message to verify
   const payload = timestamp + event.body;
   console.log("Payload length:", payload.length);
-  console.log("Public key:", publicKey);
+  console.log("Signature length:", signature.length);
+  console.log("Public key length:", publicKey.length);
 
-  const signatureBytes = hexToUint8Array(signature);
+  const signatureBytes = naclUtil.decodeBase64(signature);
   const messageBytes = naclUtil.decodeUTF8(payload);
   const publicKeyBytes = naclUtil.decodeBase64(publicKey);
 
