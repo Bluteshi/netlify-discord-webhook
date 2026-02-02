@@ -1,5 +1,5 @@
 import nacl from "tweetnacl";
-import naclUtil from "tweetnacl-util";
+import * as naclUtil from "tweetnacl-util";
 
 export async function handler(event, context) {
   if (event.httpMethod !== "POST") {
