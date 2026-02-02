@@ -16,10 +16,7 @@
   ],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "tweetnacl": "^1.0.3",
-    "tweetnacl-util": "^0.15.1"
-  },
+  "dependencies": {},
   "engines": {
     "node": ">=18.0.0"
   }

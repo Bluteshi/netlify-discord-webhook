@@ -1,13 +1,4 @@
-import nacl from "tweetnacl";
-import * as naclUtil from "tweetnacl-util";
-
-function hexToUint8Array(hex) {
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
-  }
-  return bytes;
-}
+import { createVerify } from "crypto";
 
 export async function handler(event, context) {
   if (event.httpMethod !== "POST") {
@@ -15,7 +6,7 @@ export async function handler(event, context) {
   }
 
   const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
-  const publicKey = process.env.SENDGRID_PUBLIC_KEY;
+  const publicKeyPem = process.env.SENDGRID_PUBLIC_KEY;
 
   // 1️⃣ Get headers
   const signature = event.headers["x-twilio-email-event-webhook-signature"];
@@ -27,25 +18,26 @@ export async function handler(event, context) {
 
   // 2️⃣ Construct the message to verify
   const payload = timestamp + event.body;
-  console.log("Payload length:", payload.length);
-  console.log("Signature length:", signature.length);
-  console.log("Public key length:", publicKey.length);
-
-  const signatureBytes = naclUtil.decodeBase64(signature);
-  const messageBytes = naclUtil.decodeUTF8(payload);
-  const publicKeyBytes = naclUtil.decodeBase64(publicKey);
-
-  console.log("Signature bytes length:", signatureBytes.length);
-  console.log("Message bytes length:", messageBytes.length);
-  console.log("Public key bytes length:", publicKeyBytes.length);
-
-  const verified = nacl.sign.detached.verify(
-    messageBytes,
-    signatureBytes,
-    publicKeyBytes
-  );
-
-  console.log("Verification result:", verified);
+  
+  // Convert base64 signature to buffer
+  const signatureBuffer = Buffer.from(signature, "base64");
+  
+  // Create public key in PEM format
+  const publicKeyFormatted = `-----BEGIN PUBLIC KEY-----\n${publicKeyPem}\n-----END PUBLIC KEY-----`;
+  
+  // Verify signature using ECDSA
+  const verifier = createVerify("SHA256");
+  verifier.update(payload);
+  verifier.end();
+  
+  let verified = false;
+  try {
+    verified = verifier.verify(publicKeyFormatted, signatureBuffer);
+    console.log("Verification result:", verified);
+  } catch (error) {
+    console.error("Verification error:", error.message);
+    return { statusCode: 403, body: "Signature verification failed" };
+  }
 
   if (!verified) {
     return { statusCode: 403, body: "Invalid signature" };
