@@ -1,6 +1,14 @@
 import nacl from "tweetnacl";
 import * as naclUtil from "tweetnacl-util";
 
+function hexToUint8Array(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  }
+  return bytes;
+}
+
 export async function handler(event, context) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 200, body: "OK" };
@@ -22,9 +30,9 @@ export async function handler(event, context) {
   console.log("Payload length:", payload.length);
   console.log("Public key:", publicKey);
 
-  const signatureBytes = naclUtil.decodeHex(signature);
+  const signatureBytes = hexToUint8Array(signature);
   const messageBytes = naclUtil.decodeUTF8(payload);
-  const publicKeyBytes = naclUtil.decodeHex(publicKey);
+  const publicKeyBytes = naclUtil.decodeBase64(publicKey);
 
   console.log("Signature bytes length:", signatureBytes.length);
   console.log("Message bytes length:", messageBytes.length);
