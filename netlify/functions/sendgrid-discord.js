@@ -42,7 +42,7 @@ export async function handler(event, context) {
 
   for (const e of events) {
     // Known fields across event types
-    const templateId = e.template_id || e["template_id"] || "N/A";
+    const templateId = e.template_id || e["sg_template_id"] || "N/A";
     const templateVersionId = e.template_version_id || "N/A";
     const url = e.url || null;                          // 'click' events
     const urlOffset = e.url_offset || null;             // 'click' events - which link index
